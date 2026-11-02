@@ -1,0 +1,34 @@
+
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('equipos', function (Blueprint $table) {
+            $table->id();
+
+            $table->string('codigo', 50)->unique();
+            $table->string('nombre', 150);
+            $table->string('categoria', 100);
+            $table->string('marca', 100)->nullable();
+            $table->string('modelo', 100)->nullable();
+            $table->string('numero_serie', 100)->nullable()->unique();
+
+            $table->string('estado', 30)->default('disponible');
+
+            $table->text('descripcion')->nullable();
+
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('equipos');
+    }
+};
