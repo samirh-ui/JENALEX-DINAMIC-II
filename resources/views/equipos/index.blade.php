@@ -1,0 +1,104 @@
+
+@extends('layouts.app')
+
+@section('title', 'Inventario de equipos')
+
+@section('content')
+
+<div class="card">
+    <h1>Inventario de equipos electrónicos</h1>
+
+    <p>Administra los equipos registrados en Jenalex Dinamic.</p>
+
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <div style="margin-bottom: 20px;">
+        <a href="{{ route('equipos.create') }}" class="btn">
+            Registrar equipo
+        </a>
+    </div>
+
+    <form action="{{ route('equipos.index') }}" method="GET">
+        <input
+            type="text"
+            name="buscar"
+            placeholder="Buscar por código, nombre, marca o categoría"
+            value="{{ $buscar ?? '' }}"
+        >
+
+        <button type="submit" class="btn">
+            Buscar
+        </button>
+
+        <a href="{{ route('equipos.index') }}" class="btn">
+            Limpiar
+        </a>
+    </form>
+
+    <h3>Equipos registrados</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Marca</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @forelse($equipos as $equipo)
+                <tr>
+                    <td>{{ $equipo->codigo }}</td>
+                    <td>{{ $equipo->nombre }}</td>
+                    <td>{{ $equipo->categoria }}</td>
+                    <td>{{ $equipo->marca }}</td>
+                    <td>{{ ucfirst($equipo->estado) }}</td>
+
+                    <td>
+                        <a href="{{ route('equipos.show', $equipo) }}">
+                            Ver
+                        </a>
+
+                        <a href="{{ route('equipos.edit', $equipo) }}">
+                            Editar
+                        </a>
+
+                        <form
+                            action="{{ route('equipos.destroy', $equipo) }}"
+                            method="POST"
+                            style="display:inline;"
+                            onsubmit="return confirm('¿Deseas eliminar este equipo?')"
+                        >
+                            @csrf
+                            @method('DELETE')
+
+                            <button type="submit">
+                                Eliminar
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="6">
+                        No hay equipos registrados todavía.
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    <div style="margin-top: 20px;">
+        {{ $equipos->links() }}
+    </div>
+</div>
+
+@endsection
