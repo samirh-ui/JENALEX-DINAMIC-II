@@ -23,6 +23,10 @@ $usuario->save();
 
 Luego inicia sesión en `/login`. Solo las cuentas activas pueden iniciar sesión.
 
+## Filtros y paginación
+
+Los listados de usuarios permiten buscar por nombre, documento, correo, teléfono o cargo, y filtrar por rol y estado. El inventario permite buscar por código, nombre, marca o categoría y filtrar por estado. Ambos listados muestran 10 resultados por página y conservan los filtros al navegar entre páginas.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

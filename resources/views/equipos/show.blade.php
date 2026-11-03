@@ -44,10 +44,11 @@
         Volver al inventario
     </a>
 
-    <a href="{{ route('equipos.edit', $equipo) }}"
-       class="btn">
-        Editar equipo
-    </a>
+    @can('edit-equipment')
+        <a href="{{ route('equipos.edit', $equipo) }}" class="btn">
+            Editar equipo
+        </a>
+    @endcan
 
 </div>
 
