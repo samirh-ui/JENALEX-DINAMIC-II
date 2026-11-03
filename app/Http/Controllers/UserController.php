@@ -32,9 +32,10 @@ class UserController extends Controller
             'telefono' => 'nullable|string|max:20',
             'cargo' => 'required|string|max:100',
             'password' => 'required|string|min:8|confirmed',
+            'role' => ['required', Rule::in(array_keys(User::ROLE_LABELS))],
             'estado' => [
                 'required',
-                Rule::in(['activo', 'inactivo'])
+                Rule::in(['activo', 'inactivo']),
             ],
         ]);
 
@@ -81,10 +82,11 @@ class UserController extends Controller
             'cargo' => 'required|string|max:100',
 
             'password' => 'nullable|string|min:8|confirmed',
+            'role' => ['required', Rule::in(array_keys(User::ROLE_LABELS))],
 
             'estado' => [
                 'required',
-                Rule::in(['activo', 'inactivo'])
+                Rule::in(['activo', 'inactivo']),
             ],
         ]);
 

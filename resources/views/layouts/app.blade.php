@@ -61,24 +61,6 @@
             font-size: 16px;
             color: #dbeafe;
         }
-    <header class="header">
-    <div class="header-content">
-
-        <img
-            src="{{ asset('images/image.png') }}"
-            alt="Logo Jenalex Dinamic"
-            class="logo"
-        >
-
-        <div>
-            <h2>JENALEX DINAMIC</h2>
-            <p>Inventario</p>
-        </div>
-
-    </div>
-</header>
-        
-
         /* CONTENIDO PRINCIPAL */
         main {
             max-width: 1450px;
@@ -298,6 +280,16 @@
     </header>
 
     <main>
+        @auth
+            <div style="display:flex; justify-content:flex-end; align-items:center; gap:12px; margin-bottom:16px;">
+                <span>{{ auth()->user()->name }} — {{ auth()->user()->roleName() }}</span>
+                <form action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="btn btn-secondary">Cerrar sesión</button>
+                </form>
+            </div>
+        @endauth
+
         @yield('content')
     </main>
 

@@ -13,19 +13,66 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    public const ROLE_LABELS = [
+        'administrador' => 'Administrador',
+        'coordinador' => 'Coordinador',
+        'soporte_tecnico' => 'Soporte Técnico',
+        'usuario' => 'Usuario',
+    ];
+
+    public const ROLE_PERMISSIONS = [
+        'administrador' => [
+            'manage-users',
+            'view-inventory',
+            'register-equipment',
+            'edit-equipment',
+            'delete-equipment',
+            'assign-equipment',
+            'register-requests',
+            'assign-requests',
+            'view-all-request-tracking',
+            'register-maintenance',
+            'generate-reports',
+        ],
+        'coordinador' => [
+            'view-inventory',
+            'register-equipment',
+            'edit-equipment',
+            'delete-equipment',
+            'assign-equipment',
+            'register-requests',
+            'assign-requests',
+            'view-all-request-tracking',
+            'register-maintenance',
+            'generate-reports',
+        ],
+        'soporte_tecnico' => [
+            'view-inventory',
+            'attend-requests',
+            'view-all-request-tracking',
+            'register-maintenance',
+        ],
+        'usuario' => [
+            'view-inventory',
+            'register-requests',
+            'view-own-request-tracking',
+        ],
+    ];
+
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
     protected $fillable = [
-         'name',
-    'documento',
-    'email',
-    'telefono',
-    'cargo',
-    'password',
-    'estado',
+        'name',
+        'documento',
+        'email',
+        'telefono',
+        'cargo',
+        'password',
+        'estado',
+        'role',
     ];
 
     /**
@@ -49,5 +96,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        return in_array($permission, self::ROLE_PERMISSIONS[$this->role] ?? [], true);
+    }
+
+    public function roleName(): string
+    {
+        return self::ROLE_LABELS[$this->role] ?? self::ROLE_LABELS['usuario'];
     }
 }

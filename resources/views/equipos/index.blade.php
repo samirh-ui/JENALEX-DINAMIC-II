@@ -16,11 +16,13 @@
         </div>
     @endif
 
-    <div style="margin-bottom: 20px;">
-        <a href="{{ route('equipos.create') }}" class="btn">
-            Registrar equipo
-        </a>
-    </div>
+    @can('register-equipment')
+        <div style="margin-bottom: 20px;">
+            <a href="{{ route('equipos.create') }}" class="btn">
+                Registrar equipo
+            </a>
+        </div>
+    @endcan
 
     <form action="{{ route('equipos.index') }}" method="GET">
         <input
@@ -67,23 +69,23 @@
                             Ver
                         </a>
 
-                        <a href="{{ route('equipos.edit', $equipo) }}">
-                            Editar
-                        </a>
+                        @can('edit-equipment')
+                            <a href="{{ route('equipos.edit', $equipo) }}">Editar</a>
+                        @endcan
 
-                        <form
-                            action="{{ route('equipos.destroy', $equipo) }}"
-                            method="POST"
-                            style="display:inline;"
-                            onsubmit="return confirm('¿Deseas eliminar este equipo?')"
-                        >
-                            @csrf
-                            @method('DELETE')
+                        @can('delete-equipment')
+                            <form
+                                action="{{ route('equipos.destroy', $equipo) }}"
+                                method="POST"
+                                style="display:inline;"
+                                onsubmit="return confirm('¿Deseas eliminar este equipo?')"
+                            >
+                                @csrf
+                                @method('DELETE')
 
-                            <button type="submit">
-                                Eliminar
-                            </button>
-                        </form>
+                                <button type="submit">Eliminar</button>
+                            </form>
+                        @endcan
                     </td>
                 </tr>
             @empty

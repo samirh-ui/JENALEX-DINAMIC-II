@@ -37,6 +37,7 @@
                     <th>Correo electrónico</th>
                     <th>Teléfono</th>
                     <th>Cargo</th>
+                    <th>Rol</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
@@ -52,6 +53,7 @@
                         <td>{{ $usuario->email }}</td>
                         <td>{{ $usuario->telefono ?? 'No registrado' }}</td>
                         <td>{{ $usuario->cargo }}</td>
+                        <td>{{ $usuario->roleName() }}</td>
 
                         <td>
                             @if($usuario->estado == 'activo')
@@ -96,7 +98,7 @@
                 @empty
 
                     <tr>
-                        <td colspan="7" style="text-align:center; padding:25px;">
+                        <td colspan="8" style="text-align:center; padding:25px;">
                             No hay usuarios registrados.
                         </td>
                     </tr>

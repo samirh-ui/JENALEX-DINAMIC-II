@@ -38,6 +38,11 @@
             </tr>
 
             <tr>
+                <th>Rol</th>
+                <td>{{ $usuario->roleName() }}</td>
+            </tr>
+
+            <tr>
                 <th>Estado</th>
                 <td>{{ ucfirst($usuario->estado) }}</td>
             </tr>
