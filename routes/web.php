@@ -1,6 +1,6 @@
 
 <?php
-
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EquipoController;
 
@@ -9,3 +9,4 @@ Route::get('/', function () {
 });
 
 Route::resource('equipos', EquipoController::class);
+route::resource('usuarios', UserController::class);
