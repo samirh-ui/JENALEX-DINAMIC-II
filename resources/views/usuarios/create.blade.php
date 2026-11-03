@@ -9,7 +9,7 @@
 
     <h1>Registrar usuario</h1>
 
-    <p>Complete la información para registrar un nuevo usuario.</p>
+
 
     @if ($errors->any())
         <div class="alert" style="background:#fee2e2; color:#991b1b;">
