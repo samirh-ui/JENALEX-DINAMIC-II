@@ -24,6 +24,14 @@
         </div>
     @endcan
 
+    @can('generate-reports')
+        <div style="margin-bottom: 20px;">
+            <a href="{{ route('pdf.equipos') }}" class="btn" target="_blank">
+                Generar PDF
+            </a>
+        </div>
+    @endcan
+
     <form action="{{ route('equipos.index') }}" method="GET" class="filters">
         <div class="form-group">
             <label for="buscar">Buscar equipo</label>

@@ -2,6 +2,7 @@
 <?php
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EquipoController;
+use App\Http\Controllers\PdfController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +21,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/equipos', [EquipoController::class, 'index'])
         ->middleware('can:view-inventory')->name('equipos.index');
+    Route::get('/equipos/pdf', [PdfController::class, 'equipos'])
+        ->middleware('can:generate-reports')->name('pdf.equipos');
     Route::get('/equipos/create', [EquipoController::class, 'create'])
         ->middleware('can:register-equipment')->name('equipos.create');
     Route::post('/equipos', [EquipoController::class, 'store'])
