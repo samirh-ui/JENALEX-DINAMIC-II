@@ -8,7 +8,7 @@
 <div class="card">
     <h1>Inventario de equipos electrónicos</h1>
 
-    <p>Administra los equipos registrados en Jenalex Dinamic.</p>
+   
 
     @if(session('success'))
         <div class="alert alert-success">
