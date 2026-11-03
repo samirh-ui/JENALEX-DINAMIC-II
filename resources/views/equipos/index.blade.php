@@ -32,24 +32,38 @@
         </div>
     @endcan
 
-    <form action="{{ route('equipos.index') }}" method="GET">
-        <input
-            type="text"
-            name="buscar"
-            placeholder="Buscar por código, nombre, marca o categoría"
-            value="{{ $buscar ?? '' }}"
-        >
+    <form action="{{ route('equipos.index') }}" method="GET" class="filters">
+        <div class="form-group">
+            <label for="buscar">Buscar equipo</label>
+            <input
+                type="search"
+                id="buscar"
+                name="buscar"
+                placeholder="Código, nombre, marca o categoría"
+                value="{{ $filtros['buscar'] ?? '' }}"
+            >
+        </div>
 
-        <button type="submit" class="btn">
-            Buscar
-        </button>
+        <div class="form-group">
+            <label for="estado">Estado</label>
+            <select id="estado" name="estado">
+                <option value="">Todos los estados</option>
+                @foreach (['disponible' => 'Disponible', 'asignado' => 'Asignado', 'mantenimiento' => 'Mantenimiento', 'baja' => 'Baja'] as $value => $label)
+                    <option value="{{ $value }}" @selected(($filtros['estado'] ?? '') === $value)>
+                        {{ $label }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
 
-        <a href="{{ route('equipos.index') }}" class="btn">
-            Limpiar
-        </a>
+        <div class="filter-actions">
+            <button type="submit" class="btn">Filtrar</button>
+            <a href="{{ route('equipos.index') }}" class="btn btn-secondary">Limpiar</a>
+        </div>
     </form>
 
     <h3>Equipos registrados</h3>
+    <p>Mostrando {{ $equipos->firstItem() ?? 0 }}–{{ $equipos->lastItem() ?? 0 }} de {{ $equipos->total() }} equipos.</p>
 
     <table>
         <thead>
@@ -106,7 +120,7 @@
         </tbody>
     </table>
 
-    <div style="margin-top: 20px;">
+    <div class="pagination">
         {{ $equipos->links() }}
     </div>
 </div>
