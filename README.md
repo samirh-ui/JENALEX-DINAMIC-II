@@ -7,6 +7,22 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Roles y permisos
+
+El sistema usa cuatro roles: Administrador, Coordinador, Soporte Técnico y Usuario. El administrador gestiona usuarios; todos consultan el inventario; administrador y coordinador registran, editan y eliminan equipos. Los permisos de solicitudes, mantenimiento e informes están definidos para los módulos que se agregarán posteriormente.
+
+Para habilitar el acceso en una base vacía, ejecuta `php artisan migrate` y luego `php artisan db:seed`. El seeder crea una cuenta de desarrollo (`test@example.com`, contraseña `password`); no uses esa cuenta en producción.
+
+Promueve una cuenta existente a administrador desde `php artisan tinker`:
+
+```php
+$usuario = App\Models\User::where('email', 'correo@ejemplo.com')->firstOrFail();
+$usuario->role = 'administrador';
+$usuario->save();
+```
+
+Luego inicia sesión en `/login`. Solo las cuentas activas pueden iniciar sesión.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

@@ -80,6 +80,22 @@
         @enderror
     </div>
 
+    {{-- Rol --}}
+    <div class="form-group">
+        <label for="role">Rol *</label>
+        <select id="role" name="role" required>
+            @foreach (\App\Models\User::ROLE_LABELS as $value => $label)
+                <option value="{{ $value }}"
+                    {{ old('role', $usuario->role ?? 'usuario') === $value ? 'selected' : '' }}>
+                    {{ $label }}
+                </option>
+            @endforeach
+        </select>
+        @error('role')
+            <small class="error">{{ $message }}</small>
+        @enderror
+    </div>
+
     {{-- Estado --}}
     <div class="form-group">
         <label for="estado">Estado *</label>
