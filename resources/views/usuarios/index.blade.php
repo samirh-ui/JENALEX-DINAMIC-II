@@ -25,7 +25,47 @@
         </div>
     @endif
 
+    <form action="{{ route('usuarios.index') }}" method="GET" class="filters">
+        <div class="form-group">
+            <label for="buscar">Buscar usuario</label>
+            <input
+                type="search"
+                id="buscar"
+                name="buscar"
+                value="{{ $filtros['buscar'] ?? '' }}"
+                placeholder="Nombre, documento, correo, teléfono o cargo"
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="role">Rol</label>
+            <select id="role" name="role">
+                <option value="">Todos los roles</option>
+                @foreach (\App\Models\User::ROLE_LABELS as $value => $label)
+                    <option value="{{ $value }}" @selected(($filtros['role'] ?? '') === $value)>
+                        {{ $label }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="estado">Estado</label>
+            <select id="estado" name="estado">
+                <option value="">Todos los estados</option>
+                <option value="activo" @selected(($filtros['estado'] ?? '') === 'activo')>Activo</option>
+                <option value="inactivo" @selected(($filtros['estado'] ?? '') === 'inactivo')>Inactivo</option>
+            </select>
+        </div>
+
+        <div class="filter-actions">
+            <button type="submit" class="btn">Filtrar</button>
+            <a href="{{ route('usuarios.index') }}" class="btn btn-secondary">Limpiar</a>
+        </div>
+    </form>
+
     <h3>Usuarios registrados</h3>
+    <p>Mostrando {{ $usuarios->firstItem() ?? 0 }}–{{ $usuarios->lastItem() ?? 0 }} de {{ $usuarios->total() }} usuarios.</p>
 
     <div style="overflow-x:auto;">
 
@@ -108,6 +148,10 @@
             </tbody>
         </table>
 
+    </div>
+
+    <div class="pagination">
+        {{ $usuarios->links() }}
     </div>
 
 </div>

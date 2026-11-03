@@ -1,4 +1,6 @@
-<?php namespace App\Http\Controllers;
+<?php
+
+namespace App\Http\Controllers;
 
 use App\Models\Equipo;
 use Illuminate\Http\Request;
@@ -9,20 +11,26 @@ class EquipoController extends Controller
     // Mostrar todos los equipos
     public function index(Request $request)
     {
-        $buscar = $request->input('buscar');
+        $filtros = $request->validate([
+            'buscar' => ['nullable', 'string', 'max:100'],
+            'estado' => ['nullable', Rule::in(['disponible', 'asignado', 'mantenimiento', 'baja'])],
+        ]);
 
         $equipos = Equipo::query()
-            ->when($buscar, function ($query, $buscar) {
-                $query->where('codigo', 'LIKE', "%{$buscar}%")
-                    ->orWhere('nombre', 'LIKE', "%{$buscar}%")
-                    ->orWhere('marca', 'LIKE', "%{$buscar}%")
-                    ->orWhere('categoria', 'LIKE', "%{$buscar}%");
+            ->when($filtros['buscar'] ?? null, function ($query, $buscar) {
+                $query->where(function ($query) use ($buscar) {
+                    $query->where('codigo', 'LIKE', "%{$buscar}%")
+                        ->orWhere('nombre', 'LIKE', "%{$buscar}%")
+                        ->orWhere('marca', 'LIKE', "%{$buscar}%")
+                        ->orWhere('categoria', 'LIKE', "%{$buscar}%");
+                });
             })
-            ->orderBy('id', 'desc')
+            ->when($filtros['estado'] ?? null, fn ($query, $estado) => $query->where('estado', $estado))
+            ->orderByDesc('id')
             ->paginate(10)
             ->withQueryString();
 
-        return view('equipos.index', compact('equipos', 'buscar'));
+        return view('equipos.index', compact('equipos', 'filtros'));
     }
 
     // Mostrar formulario de registro
@@ -43,9 +51,9 @@ class EquipoController extends Controller
             'numero_serie' => 'nullable|string|max:100|unique:equipos,numero_serie',
             'estado' => [
                 'required',
-                Rule::in(['disponible', 'asignado', 'mantenimiento', 'baja'])
+                Rule::in(['disponible', 'asignado', 'mantenimiento', 'baja']),
             ],
-            'descripcion' => 'nullable|string'
+            'descripcion' => 'nullable|string',
         ]);
 
         Equipo::create($datos);
@@ -75,7 +83,7 @@ class EquipoController extends Controller
                 'required',
                 'string',
                 'max:50',
-                Rule::unique('equipos', 'codigo')->ignore($equipo->id)
+                Rule::unique('equipos', 'codigo')->ignore($equipo->id),
             ],
             'nombre' => 'required|string|max:150',
             'categoria' => 'required|string|max:100',
@@ -85,13 +93,13 @@ class EquipoController extends Controller
                 'nullable',
                 'string',
                 'max:100',
-                Rule::unique('equipos', 'numero_serie')->ignore($equipo->id)
+                Rule::unique('equipos', 'numero_serie')->ignore($equipo->id),
             ],
             'estado' => [
                 'required',
-                Rule::in(['disponible', 'asignado', 'mantenimiento', 'baja'])
+                Rule::in(['disponible', 'asignado', 'mantenimiento', 'baja']),
             ],
-            'descripcion' => 'nullable|string'
+            'descripcion' => 'nullable|string',
         ]);
 
         $equipo->update($datos);
