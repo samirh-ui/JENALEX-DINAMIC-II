@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('title', 'Detalle del usuario')
@@ -35,11 +34,6 @@
             <tr>
                 <th>Cargo</th>
                 <td>{{ $usuario->cargo }}</td>
-            </tr>
-
-            <tr>
-                <th>Rol</th>
-                <td>{{ $usuario->roleName() }}</td>
             </tr>
 
             <tr>

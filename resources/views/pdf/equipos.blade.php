@@ -79,7 +79,7 @@
                     <p class="date">Fecha del reporte: {{ now()->format('d/m/Y H:i') }}</p>
                 </td>
                 <td style="text-align: right;">
-                    <img class="logo" src="{{ public_path('images/image.png') }}" alt="Logo Jenalex Dinamic">
+                    <img class="logo" src="{{ public_path('images/image.jpg') }}" alt="Logo Jenalex Dinamic">
                 </td>
             </tr>
         </table>
