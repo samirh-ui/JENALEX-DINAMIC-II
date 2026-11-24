@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="es">
 
@@ -19,15 +18,15 @@
             margin: 0;
             background: #f1f5f9;
             color: #1e293b;
+            text-align: left;
         }
 
-        
+        h1, h2, h3, p, label, th, td {
+            text-align: left;
+        }
 
         /* ENCABEZADO */
 
-    
-
-        
         .header {
             background: #172554;
             color: white;
@@ -61,7 +60,39 @@
             font-size: 16px;
             color: #dbeafe;
         }
+
+        /* MENÚ PRINCIPAL */
+
+        .main-nav {
+            background: #1e3a8a;
+            padding: 12px 5%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .main-nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            text-align: center;
+            transition: background 0.2s;
+        }
+
+        .main-nav a:hover {
+            background: #2563eb;
+        }
+
+        .main-nav a.active {
+            background: #2563eb;
+        }
+
         /* CONTENIDO PRINCIPAL */
+
         main {
             max-width: 1450px;
             margin: 35px auto;
@@ -87,6 +118,7 @@
         }
 
         /* BOTONES */
+
         .btn {
             display: inline-block;
             padding: 11px 18px;
@@ -113,6 +145,7 @@
         }
 
         /* FORMULARIOS */
+
         .form-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -171,6 +204,17 @@
             gap: 8px;
         }
 
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .error {
+            color: #dc2626;
+            font-size: 13px;
+        }
+
+        /* PAGINACIÓN */
+
         .pagination {
             margin-top: 20px;
         }
@@ -210,16 +254,8 @@
             background: #eff6ff;
         }
 
-        .full-width {
-            grid-column: 1 / -1;
-        }
-
-        .error {
-            color: #dc2626;
-            font-size: 13px;
-        }
-
         /* TABLAS */
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -240,6 +276,7 @@
         }
 
         /* MENSAJES */
+
         .alert {
             padding: 13px 16px;
             border-radius: 7px;
@@ -253,6 +290,7 @@
         }
 
         /* RESPONSIVE */
+
         @media (max-width: 650px) {
             .header {
                 padding: 15px 20px;
@@ -295,27 +333,26 @@
             table {
                 font-size: 13px;
             }
-        }
-        .header-content {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-}
 
-.logo {
-    width: 85px;
-    height: 85px;
-    object-fit: contain;
-    background: white;
-    border-radius: 10px;
-    padding: 5px;
-}
+            .main-nav {
+                padding: 10px 12px;
+                gap: 5px;
+            }
+
+            .main-nav a {
+                padding: 9px 10px;
+                font-size: 13px;
+            }
+        }
     </style>
 </head>
 
 <body>
 
+    {{-- ENCABEZADO --}}
+
     <header class="header">
+
         <div class="header-content">
 
             <img
@@ -330,21 +367,119 @@
             </div>
 
         </div>
+
     </header>
 
+    {{-- MENÚ PRINCIPAL --}}
+
+    @auth
+
+        <nav class="main-nav">
+
+            {{-- REGISTRAR SOLICITUD --}}
+
+            @can('register-requests')
+
+                <a
+                    href="{{ route('solicitudes.create') }}"
+                    class="{{ request()->routeIs('solicitudes.create') ? 'active' : '' }}"
+                >
+                    Registrar solicitud
+                </a>
+
+            @endcan
+
+            {{-- CONSULTAR SOLICITUDES --}}
+
+            @if (
+                auth()->user()->hasPermission('view-all-request-tracking') ||
+                auth()->user()->hasPermission('view-own-request-tracking')
+            )
+
+                <a
+                    href="{{ route('solicitudes.index') }}"
+                    class="{{ request()->routeIs('solicitudes.index', 'solicitudes.show') ? 'active' : '' }}"
+                >
+                    Consultar solicitudes
+                </a>
+
+            @endif
+
+            {{-- MANTENIMIENTOS --}}
+
+            @can('register-maintenance')
+
+                <a
+                    href="{{ route('mantenimientos.index') }}"
+                    class="{{ request()->routeIs('mantenimientos.*') ? 'active' : '' }}"
+                >
+                    Mantenimientos
+                </a>
+
+            @endcan
+
+            {{-- REPORTES --}}
+
+            @can('generate-reports')
+
+                <a href="{{ route('pdf.equipos') }}" target="_blank">
+                    Reporte de inventario
+                </a>
+
+                <a href="{{ route('pdf.asignaciones') }}" target="_blank">
+                    Reporte de asignaciones
+                </a>
+
+                <a href="{{ route('pdf.solicitudes') }}" target="_blank">
+                    Reporte de solicitudes
+                </a>
+
+                <a href="{{ route('pdf.mantenimientos') }}" target="_blank">
+                    Reporte de mantenimientos
+                </a>
+
+                <a href="{{ route('pdf.general') }}" target="_blank">
+                    Reporte general
+                </a>
+
+            @endcan
+
+        </nav>
+
+    @endauth
+
+    {{-- CONTENIDO PRINCIPAL --}}
+
     <main>
+
         @auth
-            <div style="display:flex; justify-content:flex-end; align-items:center; gap:12px; margin-bottom:16px;">
-                <span>{{ auth()->user()->name }} — {{ auth()->user()->roleName() }}</span>
+
+            <div style="display:flex; justify-content:flex-end; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+
+                <span>
+                    {{ auth()->user()->name }}
+                    —
+                    {{ auth()->user()->roleName() }}
+                </span>
+
                 <form action="{{ route('logout') }}" method="POST">
+
                     @csrf
-                    <button type="submit" class="btn btn-secondary">Cerrar sesión</button>
+
+                    <button type="submit" class="btn btn-secondary">
+                        Cerrar sesión
+                    </button>
+
                 </form>
+
             </div>
+
         @endauth
 
         @yield('content')
+
     </main>
 
 </body>
 </html>
+

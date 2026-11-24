@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Solicitud extends Model
 {
@@ -43,27 +44,39 @@ class Solicitud extends Model
         ];
     }
 
-    // Equipo que presenta el problema
+    // Equipo relacionado
     public function equipo(): BelongsTo
     {
-        return $this->belongsTo(Equipo::class);
+        return $this->belongsTo(Equipo::class, 'equipo_id');
     }
 
-    // Usuario que registra la solicitud
+    // Usuario que registró la solicitud
     public function usuario(): BelongsTo
     {
         return $this->belongsTo(User::class, 'usuario_id');
     }
 
-    // Técnico asignado por Mesa de ayuda
+    // Técnico asignado
     public function tecnico(): BelongsTo
     {
         return $this->belongsTo(User::class, 'tecnico_id');
     }
 
-    // Persona de Mesa de ayuda que escaló el caso
+    // Usuario que escaló la solicitud
     public function escalador(): BelongsTo
     {
         return $this->belongsTo(User::class, 'escalado_por');
     }
+
+    // Historial de movimientos
+    public function historial(): HasMany
+    {
+        return $this->hasMany(
+            SolicitudHistorial::class,
+            'solicitud_id'
+        )->latest();
+    }
 }
+
+
+

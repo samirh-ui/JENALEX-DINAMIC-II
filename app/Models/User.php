@@ -34,6 +34,7 @@ class User extends Authenticatable
             'view-all-request-tracking',
             'register-maintenance',
             'generate-reports',
+            'manage-maintenance',
         ],
         'coordinador' => [
             'view-inventory',
@@ -46,12 +47,14 @@ class User extends Authenticatable
             'view-all-request-tracking',
             'register-maintenance',
             'generate-reports',
+            'manage-maintenance',
         ],
         'soporte_tecnico' => [
             'view-inventory',
             'attend-requests',
             'view-all-request-tracking',
             'register-maintenance',
+            'manage-maintenance',
         ],
         'usuario' => [
             'view-inventory',
@@ -59,6 +62,24 @@ class User extends Authenticatable
             'view-own-request-tracking',
         ],
     ];
+
+    // Solicitudes registradas por el usuario
+    public function solicitudesRegistradas(): HasMany
+    {
+        return $this->hasMany(Solicitud::class, 'usuario_id');
+    }
+
+    // Solicitudes asignadas al técnico
+    public function solicitudesAsignadas(): HasMany
+    {
+        return $this->hasMany(Solicitud::class, 'tecnico_id');
+    }
+
+    // Solicitudes escaladas por el usuario de Mesa de ayuda
+    public function solicitudesEscaladas(): HasMany
+    {
+        return $this->hasMany(Solicitud::class, 'escalado_por');
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -126,4 +147,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Asignacion::class, 'recibido_por');
     }
+
+    // Mantenimientos realizados por el técnico
+    public function mantenimientosRealizados(): HasMany
+{
+      return $this->hasMany(Mantenimiento::class, 'tecnico_id');
+}
 }

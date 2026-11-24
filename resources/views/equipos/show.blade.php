@@ -9,6 +9,8 @@
 
     <h1>Información del equipo</h1>
 
+    {{-- MENSAJES DEL SISTEMA --}}
+
     @if(session('success'))
         <div class="alert alert-success">
             {{ session('success') }}
@@ -23,18 +25,27 @@
         </div>
     @endif
 
+    {{-- INFORMACIÓN GENERAL DEL EQUIPO --}}
+
     <p><strong>Código:</strong> {{ $equipo->codigo }}</p>
+
     <p><strong>Nombre:</strong> {{ $equipo->nombre }}</p>
+
     <p><strong>Categoría:</strong> {{ $equipo->categoria }}</p>
+
     <p><strong>Marca:</strong> {{ $equipo->marca ?? 'No especificada' }}</p>
+
     <p><strong>Modelo:</strong> {{ $equipo->modelo ?? 'No especificado' }}</p>
+
     <p><strong>Número de serie:</strong> {{ $equipo->numero_serie ?? 'No especificado' }}</p>
+
     <p><strong>Estado:</strong> {{ ucfirst($equipo->estado) }}</p>
+
     <p><strong>Descripción:</strong> {{ $equipo->descripcion ?? 'Sin descripción' }}</p>
 
     <hr>
 
-    -- FORMULARIO DE ASIGNACIÓN --
+    {{-- FORMULARIO DE ASIGNACIÓN --}}
 
     @can('assign-equipment')
 
@@ -48,6 +59,7 @@
                 @csrf
 
                 <div class="form-group">
+
                     <label for="usuario_id">
                         Seleccionar usuario responsable
                     </label>
@@ -57,16 +69,19 @@
                         <option value="">Seleccione un usuario</option>
 
                         @foreach($usuarios as $usuario)
+
                             <option value="{{ $usuario->id }}"
-                                {{ old('usuario_id') == $usuario->id ? 'selected' : '' }}>
+                                @selected(old('usuario_id') == $usuario->id)>
 
                                 {{ $usuario->name }}
                                 - {{ $usuario->documento }}
 
                             </option>
+
                         @endforeach
 
                     </select>
+
                 </div>
 
                 <div class="form-group" style="margin-top:15px;">
@@ -103,64 +118,80 @@
 
     <hr>
 
-    -- HISTORIAL DE ASIGNACIONES --
+    {{-- HISTORIAL DE ASIGNACIONES --}}
 
-    <h2>Historial de asignaciones</h2>
+    @can('assign-equipment')
 
-    @if($equipo->asignaciones->isEmpty())
+        <h2>Historial de asignaciones</h2>
 
-        <p>Este equipo todavía no tiene asignaciones registradas.</p>
+        @if($equipo->asignaciones->isEmpty())
 
-    @else
+            <p>Este equipo todavía no tiene asignaciones registradas.</p>
 
-        <div style="overflow-x:auto;">
+        @else
 
-            <table>
+            <div style="overflow-x:auto;">
 
-                <thead>
-                    <tr>
-                        <th>Usuario</th>
-                        <th>Entregado por</th>
-                        <th>Fecha de entrega</th>
-                        <th>Fecha de devolución</th>
-                        <th>Estado</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
+                <table>
 
-                <tbody>
-
-                    @foreach($equipo->asignaciones->sortByDesc('id') as $asignacion)
-
+                    <thead>
                         <tr>
+                            <th>Usuario</th>
+                            <th>Entregado por</th>
+                            <th>Fecha de entrega</th>
+                            <th>Fecha de devolución</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
 
-                            <td>{{ $asignacion->usuario->name }}</td>
+                    <tbody>
 
-                            <td>{{ $asignacion->entregador->name }}</td>
+                        @foreach($equipo->asignaciones->sortByDesc('id') as $asignacion)
 
-                            <td>
-                                {{ $asignacion->fecha_asignacion->format('d/m/Y H:i') }}
-                            </td>
+                            <tr>
 
-                            <td>
-                                {{ $asignacion->fecha_devolucion
-                                    ? $asignacion->fecha_devolucion->format('d/m/Y H:i')
-                                    : 'Pendiente' }}
-                            </td>
+                                <td>
+                                    {{ $asignacion->usuario?->name ?? 'No registrado' }}
+                                </td>
 
-                            <td>
-                                @if($asignacion->fecha_devolucion)
-                                    <span style="color:green;">Devuelto</span>
-                                @else
-                                    <span style="color:#2563eb;">Asignado</span>
-                                @endif
-                            </td>
+                                <td>
+                                    {{ $asignacion->entregador?->name ?? 'No registrado' }}
+                                </td>
 
-                            <td>
+                                <td>
+                                    {{ $asignacion->fecha_asignacion
+                                        ? $asignacion->fecha_asignacion->format('d/m/Y H:i')
+                                        : 'No registrada' }}
+                                </td>
 
-                                @if(!$asignacion->fecha_devolucion)
+                                <td>
+                                    {{ $asignacion->fecha_devolucion
+                                        ? $asignacion->fecha_devolucion->format('d/m/Y H:i')
+                                        : 'Pendiente' }}
+                                </td>
 
-                                    @can('assign-equipment')
+                                <td>
+
+                                    @if($asignacion->fecha_devolucion)
+
+                                        <span style="color:green;">
+                                            Devuelto
+                                        </span>
+
+                                    @else
+
+                                        <span style="color:#2563eb;">
+                                            Asignado
+                                        </span>
+
+                                    @endif
+
+                                </td>
+
+                                <td>
+
+                                    @if(!$asignacion->fecha_devolucion)
 
                                         <form
                                             action="{{ route('asignaciones.devolver', $asignacion) }}"
@@ -176,144 +207,147 @@
 
                                         </form>
 
-                                    @endcan
+                                    @else
 
-                                @else
+                                        {{ $asignacion->receptor?->name ?? 'No registrado' }}
 
-                                    {{ $asignacion->receptor?->name ?? 'No registrado' }}
+                                    @endif
 
-                                @endif
+                                </td>
 
-                            </td>
+                            </tr>
 
-                        </tr>
+                        @endforeach
 
-                    @endforeach
+                    </tbody>
 
-                </tbody>
+                </table>
 
-            </table>
+            </div>
 
-            
+        @endif
 
-        </div>
+        <hr>
 
-    @endif
+        {{-- HOJA DE VIDA DEL EQUIPO --}}
 
-<hr>
+        <h2>Hoja de vida del equipo</h2>
 
-{{-- HOJA DE VIDA DEL EQUIPO --}}
+        <p>
+            Aquí puedes consultar el historial de entregas y devoluciones
+            de este dispositivo.
+        </p>
 
-<h2>Hoja de vida del equipo</h2>
+        @if($equipo->asignaciones->isEmpty())
 
-<p>
-    Aquí puedes consultar el historial de entregas y devoluciones
-    de este dispositivo.
-</p>
+            <div class="alert">
+                Este equipo todavía no tiene movimientos registrados.
+            </div>
 
-@if($equipo->asignaciones->isEmpty())
+        @else
 
-    <div class="alert">
-        Este equipo todavía no tiene movimientos registrados.
-    </div>
+            <div style="overflow-x:auto;">
 
-@else
+                <table>
 
-    <div style="overflow-x:auto;">
-
-        <table>
-
-            <thead>
-                <tr>
-                    <th>Movimiento</th>
-                    <th>Usuario responsable</th>
-                    <th>Fecha</th>
-                    <th>Responsable del proceso</th>
-                    <th>Observaciones</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                @foreach($equipo->asignaciones->sortBy('fecha_asignacion') as $asignacion)
-
-                    {{-- MOVIMIENTO DE ENTREGA --}}
-
-                    <tr>
-
-                        <td>
-                            <strong>Entrega</strong>
-                        </td>
-
-                        <td>
-                            {{ $asignacion->usuario->name }}
-                        </td>
-
-                        <td>
-                            {{ $asignacion->fecha_asignacion->format('d/m/Y H:i') }}
-                        </td>
-
-                        <td>
-                            {{ $asignacion->entregador->name }}
-                        </td>
-
-                        <td>
-                            {{ $asignacion->observaciones ?? 'Sin observaciones' }}
-                        </td>
-
-                    </tr>
-
-                    {{-- MOVIMIENTO DE DEVOLUCIÓN --}}
-
-                    @if($asignacion->fecha_devolucion)
-
+                    <thead>
                         <tr>
-
-                            <td>
-                                <strong>Devolución</strong>
-                            </td>
-
-                            <td>
-                                {{ $asignacion->usuario->name }}
-                            </td>
-
-                            <td>
-                                {{ $asignacion->fecha_devolucion->format('d/m/Y H:i') }}
-                            </td>
-
-                            <td>
-                                {{ $asignacion->receptor?->name ?? 'No registrado' }}
-                            </td>
-
-                            <td>
-                                Devolución registrada
-                            </td>
-
+                            <th>Movimiento</th>
+                            <th>Usuario responsable</th>
+                            <th>Fecha</th>
+                            <th>Responsable del proceso</th>
+                            <th>Observaciones</th>
                         </tr>
+                    </thead>
 
-                    @endif
+                    <tbody>
 
-                @endforeach
+                        @foreach($equipo->asignaciones->sortBy('fecha_asignacion') as $asignacion)
 
-            </tbody>
+                            {{-- MOVIMIENTO DE ENTREGA --}}
 
-        </table>
+                            <tr>
 
-    </div>
+                                <td>
+                                    <strong>Entrega</strong>
+                                </td>
 
-@endif
+                                <td>
+                                    {{ $asignacion->usuario?->name ?? 'No registrado' }}
+                                </td>
 
+                                <td>
+                                    {{ $asignacion->fecha_asignacion
+                                        ? $asignacion->fecha_asignacion->format('d/m/Y H:i')
+                                        : 'No registrada' }}
+                                </td>
+
+                                <td>
+                                    {{ $asignacion->entregador?->name ?? 'No registrado' }}
+                                </td>
+
+                                <td>
+                                    {{ $asignacion->observaciones ?? 'Sin observaciones' }}
+                                </td>
+
+                            </tr>
+
+                            {{-- MOVIMIENTO DE DEVOLUCIÓN --}}
+
+                            @if($asignacion->fecha_devolucion)
+
+                                <tr>
+
+                                    <td>
+                                        <strong>Devolución</strong>
+                                    </td>
+
+                                    <td>
+                                        {{ $asignacion->usuario?->name ?? 'No registrado' }}
+                                    </td>
+
+                                    <td>
+                                        {{ $asignacion->fecha_devolucion->format('d/m/Y H:i') }}
+                                    </td>
+
+                                    <td>
+                                        {{ $asignacion->receptor?->name ?? 'No registrado' }}
+                                    </td>
+
+                                    <td>
+                                        Devolución registrada
+                                    </td>
+
+                                </tr>
+
+                            @endif
+
+                        @endforeach
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        @endif
+
+    @endcan
 
     <hr>
+
+    {{-- BOTONES DE NAVEGACIÓN --}}
 
     <a href="{{ route('equipos.index') }}" class="btn btn-secondary">
         Volver al inventario
     </a>
 
     @can('edit-equipment')
+
         <a href="{{ route('equipos.edit', $equipo) }}" class="btn">
             Editar equipo
         </a>
+
     @endcan
 
 </div>
