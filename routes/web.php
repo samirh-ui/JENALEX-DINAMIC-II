@@ -5,7 +5,7 @@ use App\Http\Controllers\EquipoController;
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\AsignacionController;
 Route::get('/', function () {
     return redirect()->route('equipos.index');
 });
@@ -38,4 +38,21 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('usuarios', UserController::class)
         ->middleware('can:manage-users');
+
+    // Registrar la entrega de un equipo
+    Route::post('/equipos/{equipo}/asignaciones', [
+    AsignacionController::class,
+    'store'
+])
+    ->middleware('can:assign-equipment')
+    ->name('asignaciones.store');
+
+     // Registrar la devolución de un equipo
+    Route::put('/asignaciones/{asignacion}/devolver', [
+    AsignacionController::class,
+    'devolver'
+  ])
+    ->middleware('can:assign-equipment')
+    ->name('asignaciones.devolver');
+
 });

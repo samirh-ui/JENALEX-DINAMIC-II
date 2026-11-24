@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Equipo;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Models\User;
 
 class EquipoController extends Controller
 {
@@ -63,11 +64,29 @@ class EquipoController extends Controller
             ->with('success', 'Equipo registrado correctamente.');
     }
 
-    // Mostrar información de un equipo
-    public function show(Equipo $equipo)
+    
+    
+      public function show(Equipo $equipo)
     {
-        return view('equipos.show', compact('equipo'));
-    }
+        // Cargar el historial de asignaciones
+        $equipo->load([
+            'asignaciones.usuario',
+            'asignaciones.entregador',
+            'asignaciones.receptor'
+        ]);
+
+        // Obtener los usuarios activos para el formulario
+        $usuarios = User::where('estado', 'activo')
+            ->orderBy('name')
+            ->get();
+
+        return view('equipos.show', compact(
+            'equipo',
+            'usuarios'
+        ));
+    
+}
+
 
     // Mostrar formulario de edición
     public function edit(Equipo $equipo)
@@ -110,12 +129,26 @@ class EquipoController extends Controller
     }
 
     // Eliminar un equipo
+    
     public function destroy(Equipo $equipo)
-    {
-        $equipo->delete();
+{
+    // Comprobar si el equipo tiene historial de asignaciones
+    if ($equipo->asignaciones()->exists()) {
 
         return redirect()
             ->route('equipos.index')
-            ->with('success', 'Equipo eliminado correctamente.');
+            ->with(
+                'error',
+                'No se puede eliminar este equipo porque tiene historial de asignaciones. Puedes marcarlo como dado de baja.'
+            );
     }
+
+    // Eliminar solamente si no tiene asignaciones
+    $equipo->delete();
+
+    return redirect()
+        ->route('equipos.index')
+        ->with('success', 'Equipo eliminado correctamente.');
+}
+
 }

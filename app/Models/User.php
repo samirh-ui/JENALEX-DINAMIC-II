@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -106,5 +107,23 @@ class User extends Authenticatable
     public function roleName(): string
     {
         return self::ROLE_LABELS[$this->role] ?? self::ROLE_LABELS['usuario'];
+    }
+
+    // Equipos que ha recibido el usuario
+    public function asignacionesRecibidas(): HasMany
+    {
+        return $this->hasMany(Asignacion::class, 'usuario_id');
+    }
+
+    // Equipos que ha entregado el usuario
+    public function asignacionesEntregadas(): HasMany
+    {
+        return $this->hasMany(Asignacion::class, 'entregado_por');
+    }
+
+    // Devoluciones que ha recibido el usuario
+    public function devolucionesRecibidas(): HasMany
+    {
+        return $this->hasMany(Asignacion::class, 'recibido_por');
     }
 }
