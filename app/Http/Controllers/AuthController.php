@@ -23,13 +23,15 @@ class AuthController extends Controller
 
         if (! Auth::attempt([...$credentials, 'estado' => 'activo'], $request->boolean('remember'))) {
             return back()
-                ->withErrors(['email' => 'Las credenciales no son válidas o el usuario está inactivo.'])
+                ->withErrors([
+                    'email' => 'Las credenciales no son válidas o el usuario está inactivo.'
+                ])
                 ->onlyInput('email');
         }
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('equipos.index'));
+        return redirect()->intended(route('dashboard'));
     }
 
     public function destroy(Request $request): RedirectResponse

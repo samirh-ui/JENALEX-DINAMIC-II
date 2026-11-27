@@ -1,4 +1,5 @@
 
+
 @extends('layouts.app')
 
 @section('title', 'Detalle de solicitud')
@@ -21,6 +22,42 @@
     </div>
 @endif
 
+@php
+    $estadosAns = [
+        'sin_asignar' => [
+            'texto' => 'Sin asignar',
+            'color' => '#64748b',
+            'fondo' => '#f1f5f9',
+        ],
+        'pendiente' => [
+            'texto' => 'Pendiente',
+            'color' => '#854d0e',
+            'fondo' => '#fef9c3',
+        ],
+        'cumplido' => [
+            'texto' => 'Cumplido',
+            'color' => '#166534',
+            'fondo' => '#dcfce7',
+        ],
+        'incumplido' => [
+            'texto' => 'Incumplido',
+            'color' => '#991b1b',
+            'fondo' => '#fee2e2',
+        ],
+        'vencido' => [
+            'texto' => 'Vencido',
+            'color' => '#991b1b',
+            'fondo' => '#fee2e2',
+        ],
+    ];
+
+    $estadoRespuesta = $estadosAns[$ansRespuestaEstado]
+        ?? $estadosAns['sin_asignar'];
+
+    $estadoSolucion = $estadosAns[$ansSolucionEstado]
+        ?? $estadosAns['sin_asignar'];
+@endphp
+
 <div class="card">
 
     <h1>Detalle de solicitud</h1>
@@ -34,7 +71,9 @@
 
     <p>
         <strong>Prioridad:</strong>
-        {{ $solicitud->prioridad ?? 'Sin clasificar' }}
+        {{ $solicitud->prioridad
+            ? ucfirst($solicitud->prioridad)
+            : 'Sin clasificar' }}
     </p>
 
     <hr>
@@ -79,6 +118,128 @@
         {{ $solicitud->escalador->name ?? 'Pendiente de escalamiento' }}
     </p>
 
+    <p>
+        <strong>Fecha de asignación:</strong>
+        {{ $solicitud->fecha_asignacion
+            ? $solicitud->fecha_asignacion->format('d/m/Y H:i')
+            : 'Pendiente' }}
+    </p>
+
+    <hr>
+
+    {{-- SEGUIMIENTO ANS --}}
+
+    <h3>Seguimiento de ANS</h3>
+
+    <p>
+        El Acuerdo de Nivel de Servicio (ANS) permite controlar
+        los tiempos establecidos para responder y solucionar
+        cada solicitud según su prioridad.
+    </p>
+
+    <div style="
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 18px;
+        margin: 20px 0;
+    ">
+
+        {{-- ANS DE RESPUESTA --}}
+
+        <div style="
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 18px;
+        ">
+
+            <h4 style="margin-top: 0;">
+                Tiempo de respuesta
+            </h4>
+
+            <p>
+                <strong>Fecha límite:</strong><br>
+
+                {{ $solicitud->ans_respuesta_limite
+                    ? $solicitud->ans_respuesta_limite->format('d/m/Y H:i')
+                    : 'Sin asignar' }}
+            </p>
+
+            <p>
+                <strong>Fecha de respuesta:</strong><br>
+
+                {{ $solicitud->fecha_respuesta
+                    ? $solicitud->fecha_respuesta->format('d/m/Y H:i')
+                    : 'Pendiente' }}
+            </p>
+
+            <p>
+                <strong>Estado:</strong><br>
+
+                <span style="
+                    display: inline-block;
+                    padding: 6px 12px;
+                    border-radius: 20px;
+                    font-size: 13px;
+                    font-weight: bold;
+                    color: {{ $estadoRespuesta['color'] }};
+                    background: {{ $estadoRespuesta['fondo'] }};
+                ">
+                    {{ $estadoRespuesta['texto'] }}
+                </span>
+            </p>
+
+        </div>
+
+        {{-- ANS DE SOLUCIÓN --}}
+
+        <div style="
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 18px;
+        ">
+
+            <h4 style="margin-top: 0;">
+                Tiempo de solución
+            </h4>
+
+            <p>
+                <strong>Fecha límite:</strong><br>
+
+                {{ $solicitud->ans_solucion_limite
+                    ? $solicitud->ans_solucion_limite->format('d/m/Y H:i')
+                    : 'Sin asignar' }}
+            </p>
+
+            <p>
+                <strong>Fecha de solución:</strong><br>
+
+                {{ $solicitud->fecha_solucion
+                    ? $solicitud->fecha_solucion->format('d/m/Y H:i')
+                    : 'Pendiente' }}
+            </p>
+
+            <p>
+                <strong>Estado:</strong><br>
+
+                <span style="
+                    display: inline-block;
+                    padding: 6px 12px;
+                    border-radius: 20px;
+                    font-size: 13px;
+                    font-weight: bold;
+                    color: {{ $estadoSolucion['color'] }};
+                    background: {{ $estadoSolucion['fondo'] }};
+                ">
+                    {{ $estadoSolucion['texto'] }}
+                </span>
+            </p>
+
+        </div>
+
+    </div>
+
+    <hr>
+
     {{-- ATENCIÓN TÉCNICA: SOLO TÉCNICO ASIGNADO --}}
 
     @can('attend-requests')
@@ -87,8 +248,6 @@
             (int) $solicitud->tecnico_id === (int) auth()->id()
             && !in_array($solicitud->estado, ['resuelta', 'cerrada'], true)
         )
-
-            <hr>
 
             <h3>Atención técnica</h3>
 

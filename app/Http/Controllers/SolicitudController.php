@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Equipo;
 use App\Models\Solicitud;
 use App\Models\User;
+use App\Services\AnsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use App\Services\AnsService;
 
 class SolicitudController extends Controller
 {
@@ -141,7 +141,7 @@ class SolicitudController extends Controller
 
 
     // Consultar el detalle de una solicitud
-    public function show(Solicitud $solicitud)
+    public function show(Solicitud $solicitud, AnsService $ansService)
     {
         $usuario = Auth::user();
 
@@ -167,17 +167,24 @@ class SolicitudController extends Controller
             abort(403, 'No tienes permiso para consultar solicitudes.');
         }
 
-        return view('solicitudes.show', compact('solicitud'));
+        // Consultar cumplimiento de los tiempos ANS
+        $ansRespuestaEstado = $ansService->estadoRespuesta($solicitud);
+        $ansSolucionEstado = $ansService->estadoSolucion($solicitud);
+
+        return view('solicitudes.show', compact(
+            'solicitud',
+            'ansRespuestaEstado',
+            'ansSolucionEstado'
+        ));
     }
 
 
     // Clasificar, escalar y asignar una solicitud
-         public function asignar(
-           Request $request,
-           Solicitud $solicitud,
-           AnsService $ansService
-    )
-    {
+    public function asignar(
+        Request $request,
+        Solicitud $solicitud,
+        AnsService $ansService
+    ) {
         // Solo administrador y coordinador pueden gestionar solicitudes
         if (!Auth::user()->hasPermission('assign-requests')) {
             abort(403, 'No tienes permiso para asignar solicitudes.');
@@ -229,76 +236,68 @@ class SolicitudController extends Controller
             ])->withInput();
         }
 
-        
-      DB::transaction(function () use ($solicitud, $datos, $tecnico, $ansService) {
+        DB::transaction(function () use (
+            $solicitud,
+            $datos,
+            $tecnico,
+            $ansService
+        ) {
 
-       // Bloquear la solicitud durante la asignación
-       $solicitudBloqueada = Solicitud::whereKey($solicitud->id)
-        ->lockForUpdate()
-        ->firstOrFail();
+            // Bloquear la solicitud durante la asignación
+            $solicitudBloqueada = Solicitud::whereKey($solicitud->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-      // Evitar una segunda asignación o escalamiento
-      if (
-        $solicitudBloqueada->fecha_escalamiento !== null ||
-        $solicitudBloqueada->tecnico_id !== null
-     ) {
-        throw \Illuminate\Validation\ValidationException::withMessages([
-            'solicitud' => 'Esta solicitud ya fue escalada y asignada.',
-        ]);
-    }
+            // Evitar una segunda asignación o escalamiento
+            if (
+                $solicitudBloqueada->fecha_escalamiento !== null ||
+                $solicitudBloqueada->tecnico_id !== null
+            ) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'solicitud' => 'Esta solicitud ya fue escalada y asignada.',
+                ]);
+            }
 
-         $solicitudBloqueada->update([
-            'prioridad' => $datos['prioridad'],
-            'tecnico_id' => $tecnico->id,
-            'escalado_por' => Auth::id(),
-            'fecha_escalamiento' => $fechaAsignacion,
-            'fecha_asignacion' => $fechaAsignacion,
-            'ans_respuesta_limite' => $limitesAns['ans_respuesta_limite'],
-            'ans_solucion_limite' => $limitesAns['ans_solucion_limite'],
-            'estado' => 'escalada',
-        ]);
-
-         $estadoAnterior = $solicitudBloqueada->estado;
-        $prioridadAnterior = $solicitudBloqueada->prioridad;
+            // Guardar los valores anteriores antes de actualizar
+            $estadoAnterior = $solicitudBloqueada->estado;
+            $prioridadAnterior = $solicitudBloqueada->prioridad;
             $tecnicoAnterior = $solicitudBloqueada->tecnico_id;
- 
-     // Fecha de inicio del ANS
-           $fechaAsignacion = now();
 
-      // Calcular automáticamente los límites del ANS
+            // Fecha de inicio del ANS
+            $fechaAsignacion = now();
+
+            // Calcular automáticamente los límites del ANS
             $limitesAns = $ansService->calcularLimites(
-            $datos['prioridad'],
-            $fechaAsignacion
-    );
+                $datos['prioridad'],
+                $fechaAsignacion
+            );
 
-      // Guardar asignación y fechas límite
-         $solicitudBloqueada->update([
-        'prioridad' => $datos['prioridad'],
-        'tecnico_id' => $tecnico->id,
-        'escalado_por' => Auth::id(),
-        'fecha_escalamiento' => $fechaAsignacion,
-        'fecha_asignacion' => $fechaAsignacion,
-        'ans_respuesta_limite' => $limitesAns['ans_respuesta_limite'],
-        'ans_solucion_limite' => $limitesAns['ans_solucion_limite'],
-        'estado' => 'escalada',
-    ]);
+            // Guardar asignación y fechas límite
+            $solicitudBloqueada->update([
+                'prioridad' => $datos['prioridad'],
+                'tecnico_id' => $tecnico->id,
+                'escalado_por' => Auth::id(),
+                'fecha_escalamiento' => $fechaAsignacion,
+                'fecha_asignacion' => $fechaAsignacion,
+                'ans_respuesta_limite' => $limitesAns['ans_respuesta_limite'],
+                'ans_solucion_limite' => $limitesAns['ans_solucion_limite'],
+                'estado' => 'escalada',
+            ]);
 
-    // Registrar el movimiento en el historial
-       $solicitudBloqueada->historial()->create([
-        'usuario_id' => Auth::id(),
-        'accion' => 'escalamiento_y_asignacion',
-        'estado_anterior' => $estadoAnterior,
-        'estado_nuevo' => 'escalada',
-        'prioridad_anterior' => $prioridadAnterior,
-        'prioridad_nueva' => $datos['prioridad'],
-        'tecnico_anterior' => $tecnicoAnterior,
-        'tecnico_nuevo' => $tecnico->id,
-        'observacion' => $datos['observacion']
-            ?? 'Solicitud clasificada, asignada y con tiempos ANS calculados.',
-       ]);
-
-     });
-
+            // Registrar el movimiento en el historial
+            $solicitudBloqueada->historial()->create([
+                'usuario_id' => Auth::id(),
+                'accion' => 'escalamiento_y_asignacion',
+                'estado_anterior' => $estadoAnterior,
+                'estado_nuevo' => 'escalada',
+                'prioridad_anterior' => $prioridadAnterior,
+                'prioridad_nueva' => $datos['prioridad'],
+                'tecnico_anterior' => $tecnicoAnterior,
+                'tecnico_nuevo' => $tecnico->id,
+                'observacion' => $datos['observacion']
+                    ?? 'Solicitud clasificada, asignada y con tiempos ANS calculados.',
+            ]);
+        });
 
         return redirect()
             ->route('solicitudes.show', $solicitud->id)
@@ -469,6 +468,7 @@ class SolicitudController extends Controller
             ->with('success', 'Solicitud verificada y cerrada correctamente.');
     }
 
+
     // Devolver una solicitud al técnico para continuar la atención
     public function devolver(Request $request, Solicitud $solicitud)
     {
@@ -521,6 +521,4 @@ class SolicitudController extends Controller
             ->route('solicitudes.show', $solicitud->id)
             ->with('success', 'La solicitud fue devuelta al técnico correctamente.');
     }
-
-    }
-
+}
